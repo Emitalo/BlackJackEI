@@ -1,4 +1,8 @@
 import java.util.ArrayList;
+import java.io.ObjectOutputStream;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -21,6 +25,8 @@ public class Player extends Agent {
 	private AID bestTable = null;
 	private ArrayList<ACLMessage> proposeReplies = new ArrayList<ACLMessage>();
 
+	public String playerName;
+	
 	@Override
 	protected void setup(){
 		playerUI = new PlayerUI(this);
@@ -75,16 +81,12 @@ public class Player extends Agent {
 					
 					String tablePlayersQuantity = reply.getContent();
 					Player.this.proposeReplies.add(reply);
-					// If there is a game table that needs only one player to begin the game, join it					
-					if(tablePlayersQuantity == String.valueOf(GameTable.MAX_PLAYERS - 1)){
-						Player.this.bestTable = reply.getSender();
-					}
 					
 					// If all tables proposes was already seen, try to join the best table 
 					if(this.allTablesChecked()){
 						
 						AID tableToJoin = Player.this.bestTable;
-						String playersQuantity = "3"; // The best table quantity of players is 3
+						String playersQuantity = "0"; // The best table quantity of players is 3
 						// If the best table is not available, try to join any one
 						if(tableToJoin == null){
 							// Get the first table propose
@@ -95,11 +97,11 @@ public class Player extends Agent {
 						}
 						
 						// Accept the propose to join the table
-						System.out.println("Mesa encontrada com " + playersQuantity + " jogadores.");
-						System.out.println("Tentando entrar na mesa " + tableToJoin.getName());
+						playerUI.update("Mesa encontrada com " + playersQuantity + " jogadores.");
+						playerUI.update("Tentando entrar na mesa " + tableToJoin.getName());
 						ACLMessage joinTableRequest = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
 						joinTableRequest.addReceiver(tableToJoin);
-						joinTableRequest.setContent("join table " + tableToJoin.getName());
+						joinTableRequest.setContent(Player.this.playerName);
 						joinTableRequest.setConversationId("join-table");
 						myAgent.send(joinTableRequest);
 						
@@ -108,20 +110,19 @@ public class Player extends Agent {
 					}
 				}
 				else if(reply.getPerformative() == ACLMessage.INFORM){
-					
-					// TA ERRADO - Tem que fazer outra MessageTemplate pra pegar a resposta do ACCEPT_PROPOSAL
-					System.out.println(reply.getContent());
+					playerUI.update(reply.getContent(), true);
 				}
 				else if(reply.getPerformative() == ACLMessage.INFORM_REF){
-					System.out.println(reply.getContent());
+					
+					playerUI.update(reply.getContent());
+
 				}
 				else{
 					// In this case the propose was refused
-					System.out.println("Nenhuma mesa disponível encontrada.");
+					playerUI.update("Nenhuma mesa disponível encontrada.");
 				}
 			}
 			else{
-//				System.out.println("Blocking ticker....");
 				block();
 			}
 		}
@@ -132,18 +133,19 @@ public class Player extends Agent {
 		
 		DFAgentDescription template = new DFAgentDescription();
 		ServiceDescription sd = new ServiceDescription();
-		sd.setType("truco-game");
+		sd.setType("blackjack-game");
 		template.addServices(sd);
 		DFAgentDescription[] result;
 		try {
 			result = DFService.search(myAgent, template);
-			System.out.println("Pegando as mesas existentes:");
+			playerUI.update("Pegando as mesas existentes:");
 			
 			tables = new AID[result.length];
 			for (int i = 0; i < result.length; ++i) {
 				tables[i] = result[i].getName();
 				System.out.println(tables[i].getName());
 			}
+
 		} 
 		catch (FIPAException e) {
 
@@ -152,7 +154,8 @@ public class Player extends Agent {
 		return tables;
 	}
 	
-	public void joinTable() {
-        this.addBehaviour( new JoinTableBehaviour());		
+	public void joinTable(String playerName){
+		this.playerName = playerName;
+        this.addBehaviour( new JoinTableBehaviour());
 	}
 }
