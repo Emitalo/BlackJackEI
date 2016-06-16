@@ -36,9 +36,9 @@ public class InitAgent extends Agent {
 //            
             player1 = cc.createNewAgent("Player1", "Player", args);
             player1.start();
-            
-            player2 = cc.createNewAgent("Player2", "Player", args);
-            player2.start();
+//            
+//            player2 = cc.createNewAgent("Player2", "Player", args);
+//            player2.start();
             
 //            player3 = cc.createNewAgent("Player3", "Player", args);
 //            player3.start();

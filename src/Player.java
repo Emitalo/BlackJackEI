@@ -4,8 +4,11 @@ import java.io.ObjectOutputStream;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import domain.Card;
+import domain.Deck;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
@@ -70,63 +73,31 @@ public class Player extends Agent {
 			return Player.this.seenReplies.size() >= Player.this.tables.length;
 		}
 		
-		private ACLMessage getBetterTable(){
-			
-			String bestTable = "0";
-			int index = 0;
-			int bestTableIndex = 0;
-			for(ACLMessage table : Player.this.proposeReplies){
-				if(Integer.valueOf(table.getContent()) > Integer.valueOf(bestTable) 
-					&& Integer.valueOf(table.getContent()) != (GameTable.MAX_PLAYERS - 1)){
-					bestTable = table.getContent();
-					bestTableIndex = index;
-				}
-				index++;
-			}
-			
-			return Player.this.proposeReplies.get(bestTableIndex);
-		}
-		
 		@Override
 		protected void onTick() {
 			ACLMessage reply = myAgent.receive(this.mt);
 			if(reply != null){
 				Player.this.seenReplies.add(reply);
 				if (reply.getPerformative() == ACLMessage.PROPOSE) {
-					
-					System.out.println("Player " + Player.this.getAID().getName() + " recebeu uma proposta da mesa " + reply.getSender().getName());
-					
+										
 					String tablePlayersQuantity = reply.getContent();
-					Player.this.proposeReplies.add(reply);
+					String turn = reply.getContent();
+					AID tableToJoin = reply.getSender();	
+					// Accept the propose to join the table
+
+					playerUI.update("Tentando entrar na mesa " + tableToJoin.getName());
+					ACLMessage joinTableRequest = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
+					joinTableRequest.addReceiver(tableToJoin);
+					joinTableRequest.setContent(Player.this.playerName);
+					joinTableRequest.setConversationId("join-table");
+					myAgent.send(joinTableRequest);
 					
-					// If all tables proposes was already seen, try to join the best table 
-					if(this.allTablesChecked()){
-						
-						AID tableToJoin = Player.this.bestTable;
-						String playersQuantity = "0"; // The best table quantity of players is 3
-						// If the best table is not available, try to join any one
-						if(tableToJoin == null){
-							// Get the table with more players
-							ACLMessage firstReply = this.getBetterTable();
-							tableToJoin = firstReply.getSender();
-							playersQuantity = firstReply.getContent();
-						}
-						
-						// Accept the propose to join the table
-						playerUI.update("Mesa encontrada com " + playersQuantity + " jogadores.");
-						playerUI.update("Tentando entrar na mesa " + tableToJoin.getName());
-						ACLMessage joinTableRequest = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
-						joinTableRequest.addReceiver(tableToJoin);
-						joinTableRequest.setContent(Player.this.playerName);
-						joinTableRequest.setConversationId("join-table");
-						myAgent.send(joinTableRequest);
-						
-						// Stop ticker to stop looking for tables
-						this.done();
-					}
+					// Stop ticker to stop looking for tables
+					this.done();
 				}
 				else if(reply.getPerformative() == ACLMessage.INFORM){
 					playerUI.update(reply.getContent(), true);
+					Player.this.addBehaviour(new Play());
 				}
 				else if(reply.getPerformative() == ACLMessage.INFORM_REF){
 					
@@ -173,5 +144,40 @@ public class Player extends Agent {
 	public void joinTable(String playerName){
 		this.playerName = playerName;
         this.addBehaviour( new JoinTableBehaviour());
+	}
+	
+	private class Play extends CyclicBehaviour{
+
+		@Override
+		public void action() {
+			MessageTemplate turnTemplate = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+			ACLMessage message = myAgent.receive(turnTemplate);
+			if(message != null){
+				ACLMessage reply = message.createReply();
+				AID table = message.getSender();
+
+				Player.this.playerUI.showTableCard(message.getContent());
+
+				reply.setPerformative(ACLMessage.INFORM);
+				String card = Player.this.playRound();
+				reply.setContent(card);
+				Player.this.playerUI.showPlayerCard(card);
+
+				reply.setConversationId("your-turn");
+				myAgent.send(reply);
+			}
+			else{
+				this.block();
+			}
+						
+		}
+		
+	}
+	
+	public String playRound(){
+		Deck deck = Deck.getInstance();
+		Card card = deck.getTopCard();
+		
+		return card.toString();
 	}
 }

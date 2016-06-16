@@ -2,9 +2,12 @@
 
 import java.util.ArrayList;
 
+import domain.Card;
+import domain.Deck;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -26,7 +29,7 @@ public class GameTable extends Agent{
 	private static final long serialVersionUID = -5076427523762979450L;
 	public final static int MAX_PLAYERS = 1;
 
-	private ArrayList<AID> players = new ArrayList<AID>();
+	private AID player = null;
 	private GameTableUI tableUI;
 	
 	@Override
@@ -46,11 +49,11 @@ public class GameTable extends Agent{
 			ACLMessage msg = myAgent.receive(mt);
 			if (msg != null) {
 				ACLMessage reply = msg.createReply();
-				boolean tableAvailable = GameTable.this.canRegisterPlayer();
+				boolean tableAvailable = GameTable.this.player == null;
 				if (tableAvailable) {
 					reply.setPerformative(ACLMessage.PROPOSE);
+					reply.setContent("Mesa encontrada");
 					GameTable.this.addBehaviour(new AcceptPlayersBehaviour());
-					reply.setContent(Integer.toString(GameTable.this.players.size()));
 				}
 				else {
 					reply.setPerformative(ACLMessage.REFUSE);
@@ -73,13 +76,14 @@ public class GameTable extends Agent{
 				if(message != null){
 					ACLMessage reply = message.createReply();
 					AID playerToJoin = message.getSender();
-					String player = message.getContent();
-					if(GameTable.this.canRegisterPlayer()){
+					
+					if(GameTable.this.player == null){
 						System.out.println("Mesa disponível, pode entrar jovem...");
-						GameTable.this.players.add(playerToJoin);
+						GameTable.this.player = playerToJoin;
 						reply.setPerformative(ACLMessage.INFORM);
 						reply.setContent("Seja bem-vindo! Você entrou na nossa mesa!");
-						GameTable.this.tableUI.showCard("Jogando com " + player, "4 de Paus");
+						String player = message.getContent();
+						GameTable.this.startGame(player);
 					}else{
 						System.out.println("Demorou demais! Mesa ta cheia, jovem...");
 						reply.setPerformative(ACLMessage.INFORM_REF);
@@ -113,18 +117,39 @@ public class GameTable extends Agent{
 		}	
 	}
 	
-	private boolean canRegisterPlayer(){
-		
-		int playersOnTable = this.players.size();
-		boolean available;
-		if(playersOnTable < MAX_PLAYERS){
-			available = true;
-		}
-		else{
-			available = false;
+	public void startGame(String player) {
+		this.tableUI.showPlayer("Cartas de " + player);
+
+		this.playRound();
+	}
+	
+	public void playRound(){
+		// Get a card on deck
+		Deck deck = Deck.getInstance();
+		Card card = deck.getTopCard();
+		this.addBehaviour(new ShowCardAndPassBehaviour(card));
+	}
+
+	private class ShowCardAndPassBehaviour extends OneShotBehaviour{
+
+		private Card card;
+		public ShowCardAndPassBehaviour(Card card) {
+			super();
+			this.card = card;
 		}
 
-		return available;
+		@Override
+		public void action() {
+			GameTable.this.tableUI.showCard(card.toString());
+//			MessageTemplate informTemplate = MessageTemplate.MatchConversationId();
+			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+			
+			message.setContent("Cartas da mesa: \n " + card.toString() + "\n Sua vez.");
+			message.setConversationId("your-turn");
+			message.addReceiver(GameTable.this.player);
+			myAgent.send(message);
+		}
+		
 	}
 	
 }
