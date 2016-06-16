@@ -70,6 +70,23 @@ public class Player extends Agent {
 			return Player.this.seenReplies.size() >= Player.this.tables.length;
 		}
 		
+		private ACLMessage getBetterTable(){
+			
+			String bestTable = "0";
+			int index = 0;
+			int bestTableIndex = 0;
+			for(ACLMessage table : Player.this.proposeReplies){
+				if(Integer.valueOf(table.getContent()) > Integer.valueOf(bestTable) 
+					&& Integer.valueOf(table.getContent()) != (GameTable.MAX_PLAYERS - 1)){
+					bestTable = table.getContent();
+					bestTableIndex = index;
+				}
+				index++;
+			}
+			
+			return Player.this.proposeReplies.get(bestTableIndex);
+		}
+		
 		@Override
 		protected void onTick() {
 			ACLMessage reply = myAgent.receive(this.mt);
@@ -89,9 +106,8 @@ public class Player extends Agent {
 						String playersQuantity = "0"; // The best table quantity of players is 3
 						// If the best table is not available, try to join any one
 						if(tableToJoin == null){
-							// Get the first table propose
-							ACLMessage firstReply = Player.this.proposeReplies.get(0);
-							System.out.println(firstReply.getPerformative());
+							// Get the table with more players
+							ACLMessage firstReply = this.getBetterTable();
 							tableToJoin = firstReply.getSender();
 							playersQuantity = firstReply.getContent();
 						}
