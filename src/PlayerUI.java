@@ -12,6 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JList;
 
 public class PlayerUI extends JFrame {
 
@@ -27,6 +28,16 @@ public class PlayerUI extends JFrame {
 	private JLabel playerName;
 
 	private JTextField name;
+	private JPanel cardsPanel;
+	private JPanel panel;
+	private JLabel tableCards;
+	private JList list;
+
+	private JLabel tabCards;
+
+	private JLabel myCards;
+
+	private JLabel turnMessage;
 
 	public PlayerUI(Player player2) {
 		super();
@@ -39,7 +50,7 @@ public class PlayerUI extends JFrame {
 		getContentPane().add(p);
 		
 		name = new JTextField();
-		name.setBounds(120, 78, 225, 25);
+		name.setBounds(169, 45, 225, 25);
 		getContentPane().add(name);
 		findTableBtn = new JButton("Procurar mesa");
 		findTableBtn.setBounds(0, 194, 450, 25);
@@ -49,9 +60,27 @@ public class PlayerUI extends JFrame {
 		message.setBounds(12, 128, 450, 25);
 		getContentPane().add(message);
 		
+		cardsPanel = new JPanel();
+		cardsPanel.setBounds(93, 65, 287, 138);
+		cardsPanel.setLayout(null);
+
 		playerName = new JLabel("Nome");
-		playerName.setBounds(42, 83, 70, 15);
+		playerName.setBounds(121, 50, 100, 15);
 		getContentPane().add(playerName);
+		
+		tabCards = new JLabel("New label");
+		tabCards.setBounds(167, 5, 110, 15);
+		
+		myCards = new JLabel("New label");
+		myCards.setBounds(12, 5, 110, 15);
+		
+		tableCards = new JLabel("Cartas da mesa");
+		tableCards.setBounds(243, 50, 121, 15);
+
+		turnMessage = new JLabel("");
+		turnMessage.setBounds(54, 12, 213, 15);
+		panel.add(turnMessage);
+		
 		findTableBtn.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 					myAgent.joinTable(name.getText());
@@ -71,12 +100,22 @@ public class PlayerUI extends JFrame {
 		this.update(message);
 		this.remove(findTableBtn);
 		this.remove(name);
-		this.playerName.setText("Olá " + name.getText());
+		this.remove(this.message);
+		this.playerName.setText(name.getText());
+		getContentPane().add(cardsPanel);
 		this.update(getGraphics());
 	}
 	
-	public void showCard(String card){
-		this.message.setText(card);
+	public void showPlayerCard(String card){
+		this.myCards.setText(card);
+		this.cardsPanel.add(myCards);
+		this.update(getGraphics());
+	}
+	
+	public void showTableCard(String card){
+		getContentPane().add(tableCards);
+		this.tabCards.setText(card);
+		this.cardsPanel.add(tabCards);
 		this.update(getGraphics());
 	}
 	
@@ -84,5 +123,4 @@ public class PlayerUI extends JFrame {
 		this.message.setText(message);
 		this.update(getGraphics());
 	}
-	
 }
