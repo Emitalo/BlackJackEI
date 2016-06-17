@@ -1,11 +1,3 @@
-import java.util.ArrayList;
-import java.io.ObjectOutputStream;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import domain.Card;
-import domain.Deck;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -18,11 +10,18 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
+import java.util.ArrayList;
+
+import domain.Card;
+import domain.Deck;
+
 public class Player extends Agent {
 
 	private static final long serialVersionUID = -1729142182071611776L;
 
-	private PlayerUI playerUI;
+	private PlayerUI searchForTableUI;
+	private PlayingPlayerUI playingPlayerUI;
+	
 	private ArrayList<ACLMessage> seenReplies = new ArrayList<ACLMessage>();
 	private AID[] tables;
 	private AID bestTable = null;
@@ -32,8 +31,8 @@ public class Player extends Agent {
 	
 	@Override
 	protected void setup(){
-		playerUI = new PlayerUI(this);
-		playerUI.showGui();
+		searchForTableUI = new PlayerUI(this);
+		searchForTableUI.showGui();
 	}
 
 	private class JoinTableBehaviour extends OneShotBehaviour{
@@ -85,7 +84,7 @@ public class Player extends Agent {
 					AID tableToJoin = reply.getSender();	
 					// Accept the propose to join the table
 
-					playerUI.update("Tentando entrar na mesa " + tableToJoin.getName());
+					searchForTableUI.update("Tentando entrar na mesa " + tableToJoin.getName());
 					ACLMessage joinTableRequest = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
 					joinTableRequest.addReceiver(tableToJoin);
 					joinTableRequest.setContent(Player.this.playerName);
@@ -96,17 +95,24 @@ public class Player extends Agent {
 					this.done();
 				}
 				else if(reply.getPerformative() == ACLMessage.INFORM){
-					playerUI.update(reply.getContent(), true);
+					// Player accepted to play, so dispose the screen to search for a game table
+					searchForTableUI.dispose();
+					
+					// Create the screen to play
+					playingPlayerUI = new PlayingPlayerUI(Player.this);
+					playingPlayerUI.showGui();
+					
+					// Start the player behaviour to play the game
 					Player.this.addBehaviour(new Play());
 				}
 				else if(reply.getPerformative() == ACLMessage.INFORM_REF){
 					
-					playerUI.update(reply.getContent());
+					searchForTableUI.update(reply.getContent());
 
 				}
 				else{
 					// In this case the propose was refused
-					playerUI.update("Nenhuma mesa disponível encontrada.");
+					searchForTableUI.update("Nenhuma mesa disponível encontrada.");
 				}
 			}
 			else{
@@ -125,7 +131,7 @@ public class Player extends Agent {
 		DFAgentDescription[] result;
 		try {
 			result = DFService.search(myAgent, template);
-			playerUI.update("Pegando as mesas existentes:");
+			searchForTableUI.update("Pegando as mesas existentes:");
 			
 			tables = new AID[result.length];
 			for (int i = 0; i < result.length; ++i) {
@@ -146,6 +152,7 @@ public class Player extends Agent {
         this.addBehaviour( new JoinTableBehaviour());
 	}
 	
+	// Keep a cyclic behaviour to check whether is the player turn
 	private class Play extends CyclicBehaviour{
 
 		@Override
@@ -156,12 +163,12 @@ public class Player extends Agent {
 				ACLMessage reply = message.createReply();
 				AID table = message.getSender();
 
-				Player.this.playerUI.showTableCard(message.getContent());
+				Player.this.playingPlayerUI.showTableCard(message.getContent());
 
 				reply.setPerformative(ACLMessage.INFORM);
 				String card = Player.this.playRound();
 				reply.setContent(card);
-				Player.this.playerUI.showPlayerCard(card);
+				Player.this.playingPlayerUI.showPlayerCard(card);
 
 				reply.setConversationId("your-turn");
 				myAgent.send(reply);
@@ -169,9 +176,7 @@ public class Player extends Agent {
 			else{
 				this.block();
 			}
-						
 		}
-		
 	}
 	
 	public String playRound(){
