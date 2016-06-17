@@ -1,5 +1,4 @@
 package agent;
-import java.util.ArrayList;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -12,10 +11,13 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import domain.Card;
-import domain.Deck;
+
+import java.util.ArrayList;
+
 import UI.PlayerUI;
 import UI.PlayingPlayerUI;
+import domain.Card;
+import domain.Deck;
 
 public class Player extends Agent {
 
@@ -28,6 +30,9 @@ public class Player extends Agent {
 	
 	private ArrayList<ACLMessage> seenReplies = new ArrayList<ACLMessage>();
 	private AID[] tables;
+	
+	private ArrayList<Card> cards = new ArrayList<Card>();
+	
 	public String playerName;
 	private Integer points = 0;
 	private boolean isPlayerTurn = true;
@@ -216,6 +221,9 @@ public class Player extends Agent {
 	public void getNewCard() {
 		Deck deck = Deck.getInstance();		
 		Card card = deck.getTopCard();
+		
+		// Save the card to get it back to the pool later
+		this.cards.add(card);
 		
 		this.points += card.getRealValue();
 		this.playingPlayerUI.showPlayerCard(card.toString());
