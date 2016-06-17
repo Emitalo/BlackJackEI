@@ -30,13 +30,11 @@ public class GameTable extends Agent{
 	public final static int MAX_PLAYERS = 1;
 
 	private AID player = null;
-	private GameTableUI tableUI;
 	
 	@Override
 	protected void setup() {
 		this.makeTableAvailable();
 		addBehaviour(new JoinPlayersBehaviour());
-		this.tableUI = new GameTableUI(this);
 	}
 	
 	private class JoinPlayersBehaviour extends CyclicBehaviour{
@@ -82,8 +80,7 @@ public class GameTable extends Agent{
 						GameTable.this.player = playerToJoin;
 						reply.setPerformative(ACLMessage.INFORM);
 						reply.setContent("Seja bem-vindo! Você entrou na nossa mesa!");
-						String player = message.getContent();
-						GameTable.this.startGame(player);
+						GameTable.this.startGame();
 					}else{
 						System.out.println("Demorou demais! Mesa ta cheia, jovem...");
 						reply.setPerformative(ACLMessage.INFORM_REF);
@@ -117,13 +114,7 @@ public class GameTable extends Agent{
 		}	
 	}
 	
-	public void startGame(String player) {
-		this.tableUI.showPlayer("Cartas de " + player);
-
-		this.playRound();
-	}
-	
-	public void playRound(){
+	public void startGame(){
 		// Get a card on deck
 		Deck deck = Deck.getInstance();
 		Card card = deck.getTopCard();
@@ -140,7 +131,6 @@ public class GameTable extends Agent{
 
 		@Override
 		public void action() {
-			GameTable.this.tableUI.showCard(card.toString());
 //			MessageTemplate informTemplate = MessageTemplate.MatchConversationId();
 			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
 			

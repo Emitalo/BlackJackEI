@@ -60,30 +60,30 @@ public class PlayerUI extends JFrame {
 		message.setBounds(12, 128, 450, 25);
 		getContentPane().add(message);
 		
-		cardsPanel = new JPanel();
-		cardsPanel.setBounds(93, 65, 287, 138);
-		cardsPanel.setLayout(null);
-
+//		cardsPanel = new JPanel();
+//		cardsPanel.setBounds(93, 65, 287, 138);
+//		cardsPanel.setLayout(null);
+//
 		playerName = new JLabel("Nome");
 		playerName.setBounds(121, 50, 100, 15);
 		getContentPane().add(playerName);
-		
-		tabCards = new JLabel("New label");
-		tabCards.setBounds(167, 5, 110, 15);
-		
-		myCards = new JLabel("New label");
-		myCards.setBounds(12, 5, 110, 15);
-		
-		tableCards = new JLabel("Cartas da mesa");
-		tableCards.setBounds(243, 50, 121, 15);
+//		
+//		tabCards = new JLabel("New label");
+//		tabCards.setBounds(167, 5, 110, 15);
+//		
+//		myCards = new JLabel("New label");
+//		myCards.setBounds(12, 5, 110, 15);
+//		
+//		tableCards = new JLabel("Cartas da mesa");
+//		tableCards.setBounds(243, 50, 121, 15);
 
-		turnMessage = new JLabel("");
-		turnMessage.setBounds(54, 12, 213, 15);
-		panel.add(turnMessage);
+//		turnMessage = new JLabel("");
+//		turnMessage.setBounds(54, 12, 213, 15);
+//		panel.add(turnMessage);
 		
 		findTableBtn.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
-					myAgent.joinTable(name.getText());
+				myAgent.joinTable(name.getText());
 			}
 		} );
 		
@@ -97,25 +97,11 @@ public class PlayerUI extends JFrame {
 	}
 
 	public void update(String message, boolean showCards){
-		this.update(message);
 		this.remove(findTableBtn);
 		this.remove(name);
 		this.remove(this.message);
 		this.playerName.setText(name.getText());
 		getContentPane().add(cardsPanel);
-		this.update(getGraphics());
-	}
-	
-	public void showPlayerCard(String card){
-		this.myCards.setText(card);
-		this.cardsPanel.add(myCards);
-		this.update(getGraphics());
-	}
-	
-	public void showTableCard(String card){
-		getContentPane().add(tableCards);
-		this.tabCards.setText(card);
-		this.cardsPanel.add(tabCards);
 		this.update(getGraphics());
 	}
 	
