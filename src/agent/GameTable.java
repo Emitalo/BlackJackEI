@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import domain.Card;
 import domain.Deck;
 import domain.Round;
+import exception.OverTwentOneException;
+import exception.TwentOneException;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -31,6 +33,7 @@ public class GameTable extends Agent{
 	public static final String TABLE_TO_PLAYER_TURN = "table-to-player";
 	public static final String GAME_TABLE_CARDS = "game-table-cards";
 	public static final String OVER_21 = "Passou de 21!";
+	public static final String WINNER_21 = "21! ganhou!";
 
 	private AID player = null;
 
@@ -40,12 +43,15 @@ public class GameTable extends Agent{
 	public Integer playerPoints = 0;
 
 	private ArrayList<Card> cards = new ArrayList<Card>();
+
+	public boolean isTableTurn = true;
 	
 	@Override
 	protected void setup() {
 		this.makeTableAvailable();
 		this.currentRound = new Round(this);
-		addBehaviour(new JoinPlayersBehaviour());
+		this.addBehaviour(new JoinPlayersBehaviour());
+		this.addBehaviour(new StartRoundBehaviour());
 	}
 	
 	private class JoinPlayersBehaviour extends CyclicBehaviour{
@@ -59,6 +65,9 @@ public class GameTable extends Agent{
 			if (msg != null) {
 				ACLMessage reply = msg.createReply();
 				boolean tableAvailable = GameTable.this.player == null;
+				
+				System.out.println(GameTable.this.getName() + " player '" + GameTable.this.player == null + "'");
+				
 				if (tableAvailable) {
 					reply.setPerformative(ACLMessage.PROPOSE);
 					reply.setContent("Mesa encontrada");
@@ -135,21 +144,22 @@ public class GameTable extends Agent{
 		}
 	}
 	
-	private Card getNewCard() throws Exception{
+	private Card getNewCard() throws OverTwentOneException, TwentOneException{
 		Deck deck = Deck.getInstance();
 		Card card = deck.getRandCard();
 		
 		// Save the card to get it back to the pool later
 		this.cards.add(card);
 		
-		this.points += card.getRealValue();
-		
 		System.out.println("Pontos até agora: " + this.points);
-		
+
+		this.points += card.getRealValue();
+			
 		if(this.points >= 21){
 			this.currentRound.endCurrentRound();
-			
-			throw new Exception(GameTable.OVER_21);
+			throw new OverTwentOneException(GameTable.OVER_21);
+		}else if(this.points == 21){
+			throw new TwentOneException(GameTable.WINNER_21);
 		}
 
 		return card;
@@ -174,7 +184,7 @@ public class GameTable extends Agent{
 		public void action() {
 			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
 						
-			message.setContent(card.toString());
+			message.setContent(this.card.toString());
 			message.setConversationId(GameTable.TABLE_TO_PLAYER_TURN);
 			message.addReceiver(GameTable.this.player);
 			myAgent.send(message);
@@ -200,14 +210,18 @@ public class GameTable extends Agent{
 			ACLMessage message = myAgent.receive(turnTemplate);
 			if(message != null){
 				
+				// If player standed, is the table turn
+				GameTable.this.isTableTurn = true;
+				
 				System.out.println("A mesa " + GameTable.this.getName() + " recebeu o INFORM do player " + message.getSender());
 
 				// Increment the player points
 				GameTable.this.playerPoints +=  Integer.valueOf(message.getContent());
 				
-				this.getAndSendCard(message);
-			
-				GameTable.this.addBehaviour(new StartRoundBehaviour());
+				while(GameTable.this.isTableTurn){
+					System.out.println("Still table turn...");
+					this.getAndSendCard(message);
+				}
 			}else{
 				this.block();
 			}
@@ -217,22 +231,34 @@ public class GameTable extends Agent{
 
 			String content = "";
 			String conversationId = "";
+			boolean isToSend = false;
 
 			try{
-
 				Card card = GameTable.this.getNewCard();
 				content = card.toString();
 				conversationId = GameTable.GAME_TABLE_CARDS;
-			}catch(Exception e){
+				isToSend = true;
+			}catch(OverTwentOneException e){
 				content = e.getMessage();
 				conversationId = GameTable.OVER_21;
+				System.out.println("Table over 21");
+				GameTable.this.isTableTurn = false;
+			}catch(TwentOneException e){
+				content = e.getMessage();
+				conversationId = GameTable.WINNER_21;
+				System.out.println("Table won! 21 made!");
+				GameTable.this.isTableTurn = false;
+				isToSend = true;
 			}
 			
-			ACLMessage reply = message.createReply();
-			reply.setPerformative(ACLMessage.INFORM);
-			reply.setContent(content);
-			reply.setConversationId(conversationId);
-			myAgent.send(reply);
+			if(GameTable.this.isTableTurn && isToSend){
+				
+				ACLMessage reply = message.createReply();
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setContent(content);
+				reply.setConversationId(conversationId);
+				myAgent.send(reply);
+			}
 		}
 		
 	}
@@ -251,8 +277,11 @@ public class GameTable extends Agent{
 			
 			ACLMessage message = myAgent.receive(turnTemplate);
 			if(message != null){
+				System.out.println("Starting new round..");
+				
 				Deck deck = Deck.getInstance();
 				deck.collectCards(GameTable.this.cards);
+				GameTable.this.cards.clear();
 				GameTable.this.currentRound = new Round(GameTable.this);
 				GameTable.this.currentRound.startRound();
 				GameTable.this.startGame();

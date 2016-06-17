@@ -37,8 +37,6 @@ public class Round {
 			else{
 				this.winner = "Jogador ganhou";
 			}
-					
-				
 		}
 		else{
 			this.winner = "";

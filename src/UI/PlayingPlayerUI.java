@@ -8,11 +8,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 
+import agent.GameTable;
 import agent.Player;
 
 import javax.swing.JButton;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+
+import exception.OverTwentOneException;
+import exception.TwentOneException;
 
 public class PlayingPlayerUI extends JFrame {
 
@@ -51,7 +55,7 @@ public class PlayingPlayerUI extends JFrame {
 		message.setBounds(117, 0, 248, 22);
 		getContentPane().add(message);
 		
-		String [] columnsTableCards = {"Cartas da mesa"};
+		String [] columnsTableCards = {"Mesa"};
 		
 		tableTableModel = new DefaultTableModel(null, columnsTableCards);			
 		tableOfTableCards = new JTable(tableTableModel);
@@ -85,7 +89,7 @@ public class PlayingPlayerUI extends JFrame {
 		newRoundBtn.setBounds(152, 241, 148, 25);
 		getContentPane().add(newRoundBtn);
 		
-		JLabel lblNewLabel = new JLabel("Cartas da mesa");
+		JLabel lblNewLabel = new JLabel("Mesa");
 		lblNewLabel.setBounds(259, 26, 106, 17);
 		getContentPane().add(lblNewLabel);
 		
@@ -93,10 +97,13 @@ public class PlayingPlayerUI extends JFrame {
 			public void actionPerformed(ActionEvent ev) {
 				try{
 					player.getNewCard();
-				}catch (Exception e){
+				}catch (OverTwentOneException e){
 					PlayingPlayerUI.this.update(PlayingPlayerUI.this.player.playerName + " passou de 21!");
 					PlayingPlayerUI.this.enableOnlyNewRound();
-					PlayingPlayerUI.this.player.stand();					
+					PlayingPlayerUI.this.player.stand();
+				}catch(TwentOneException e){
+					PlayingPlayerUI.this.update(PlayingPlayerUI.this.player.playerName + " fez 21! Ganhou!");
+					PlayingPlayerUI.this.enableOnlyNewRound();
 				}
 			}
 		} );
@@ -105,12 +112,13 @@ public class PlayingPlayerUI extends JFrame {
 			public void actionPerformed(ActionEvent ev) {
 				this.removePlayerRows();
 				this.removeTableRows();
+				PlayingPlayerUI.this.update("Vez de " + PlayingPlayerUI.this.player.playerName);
 				PlayingPlayerUI.this.update(getGraphics());
+				PlayingPlayerUI.this.player.stand();
 				player.startNewRound();
 				newCardBtn.setEnabled(true);
 				standBtn.setEnabled(true);
-			
-				}
+			}
 			
 			private void removePlayerRows() {
 				int rows = playerTableModel.getRowCount();
@@ -139,12 +147,13 @@ public class PlayingPlayerUI extends JFrame {
 	}
 	
 	public void update(String message){
+		System.out.println("\nUpdating screen messagewith: " + message + "\n");
 		this.message.setText(message);
 		this.update(getGraphics());
 	}
 	
 	public void addTableCard(String card){
-	
+
 		String [] cards = new String[1];
 		cards[0] = card;
 		

@@ -33,14 +33,14 @@ public class InitAgent extends Agent {
             gameTable1 = cc.createNewAgent("Table1", "agent.GameTable", args);
             gameTable1.start();
             
-//            gameTable2 = cc.createNewAgent("Table2", "GameTable", args);
-//            gameTable2.start();
-//            
+            gameTable2 = cc.createNewAgent("Table2", "agent.GameTable", args);
+            gameTable2.start();
+
             player1 = cc.createNewAgent("Player1", "agent.Player", args);
             player1.start();
-//            
-//            player2 = cc.createNewAgent("Player2", "Player", args);
-//            player2.start();
+
+            player2 = cc.createNewAgent("Player2", "agent.Player", args);
+            player2.start();
             
 //            player3 = cc.createNewAgent("Player3", "Player", args);
 //            player3.start();
