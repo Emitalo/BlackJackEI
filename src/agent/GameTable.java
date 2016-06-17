@@ -30,6 +30,8 @@ public class GameTable extends Agent{
 	public final static int MAX_PLAYERS = 1;
 	public static final String TABLE_TO_PLAYER_TURN = "table-to-player";
 
+	public static final String GAME_TABLE_CARDS = "game-table-cards";
+
 	private AID player = null;
 
 	private Round currentRound;
@@ -144,6 +146,7 @@ public class GameTable extends Agent{
 		if(this.points >= 21){
 			this.currentRound.endCurrentRound();
 		}
+
 		return card;
 	}
 	 
@@ -198,12 +201,27 @@ public class GameTable extends Agent{
 			if(message != null){
 				
 				System.out.println("A mesa " + GameTable.this.getName() + " recebeu o INFORM do player " + message.getSender());
-				GameTable.this.addBehaviour(new StartRoundBehaviour());		
-				String playerPoints =  message.getContent();
+
+				// Increment the player points
+				GameTable.this.playerPoints +=  Integer.valueOf(message.getContent());
 				
+				this.getAndSendCard(message);
+			
+				GameTable.this.addBehaviour(new StartRoundBehaviour());
 			}else{
 				this.block();
 			}
+		}
+		
+		private void getAndSendCard(ACLMessage message){
+			
+			Card card = GameTable.this.getNewCard();
+			
+			ACLMessage reply = message.createReply();
+			reply.setPerformative(ACLMessage.INFORM);
+			reply.setContent(card.toString());
+			reply.setConversationId(GameTable.GAME_TABLE_CARDS);
+			myAgent.send(reply);
 		}
 		
 	}

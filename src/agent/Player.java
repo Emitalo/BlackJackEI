@@ -210,6 +210,24 @@ public class Player extends Agent {
 				System.out.println("Blocking Play()");
 				this.block();
 			}
+			
+			MessageTemplate showTableCardsTemplate = MessageTemplate.and(
+				MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+				MessageTemplate.MatchConversationId(GameTable.GAME_TABLE_CARDS)
+			);
+			
+			ACLMessage msg = myAgent.receive(showTableCardsTemplate);
+			
+			if(msg != null){
+				
+				System.out.println("Mostrando a carta da mesa " + msg.getSender().getName());
+				
+				// Displaying the table card on PlayerUI
+				String tableCard = msg.getContent();
+				Player.this.playingPlayerUI.addTableCard(tableCard);
+			}else{
+				this.block();
+			}
 		}
 	}
 	
