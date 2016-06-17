@@ -83,6 +83,10 @@ public class PlayingPlayerUI extends JFrame {
 		newRoundBtn.setBounds(152, 241, 148, 25);
 		getContentPane().add(newRoundBtn);
 		
+		JLabel lblNewLabel = new JLabel("Cartas da mesa");
+		lblNewLabel.setBounds(259, 26, 106, 17);
+		getContentPane().add(lblNewLabel);
+		
 		newCardBtn.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				player.getNewCard();
@@ -91,8 +95,31 @@ public class PlayingPlayerUI extends JFrame {
 		
 		newRoundBtn.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
+				this.removePlayerRows();
+				this.removeTableRows();
+				PlayingPlayerUI.this.update(getGraphics());
 				player.startNewRound();
+				newCardBtn.setEnabled(true);
+				standBtn.setEnabled(true);
+			
+				}
+			
+			private void removePlayerRows() {
+				int rows = playerTableModel.getRowCount();
+				while(rows != 0){
+					playerTableModel.removeRow(0);
+					rows = playerTableModel.getRowCount();
+				}
 			}
+			
+			private void removeTableRows() {
+				int rows = tableTableModel.getRowCount();
+				while(rows != 0){
+					tableTableModel.removeRow(0);
+					rows = tableTableModel.getRowCount();
+				}
+			}
+
 		} );
 	}
 	
