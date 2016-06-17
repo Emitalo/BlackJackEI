@@ -127,13 +127,9 @@ public class GameTable extends Agent{
 	
 	public void startGame(){
 		try{
-			ArrayList<Card> cards = new ArrayList<Card>();
-			Card card;
-			card = this.getNewCard();
-			cards.add(card);
-			card = this.getNewCard();
-			cards.add(card);
-			this.addBehaviour(new InitGame(cards));
+			Card card = this.getNewCard();
+			this.cards.add(card);
+			this.addBehaviour(new InitGame(card));
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -167,23 +163,18 @@ public class GameTable extends Agent{
 
 		private static final long serialVersionUID = 1195651792447082421L; 
 		
-		private ArrayList<Card> cards = new ArrayList<Card>();
+		private Card card;
 		
-		public InitGame(ArrayList<Card> cards){
+		public InitGame(Card card){
 			super();
-			this.cards = cards;
+			this.card = card;
 		}
 		
 		@Override
 		public void action() {
 			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-			
-			String content = "";
-			for (Card card : this.cards) {
-				content += "\n" + card.toString();
-			}
-			
-			message.setContent(content);
+						
+			message.setContent(card.toString());
 			message.setConversationId(GameTable.TABLE_TO_PLAYER_TURN);
 			message.addReceiver(GameTable.this.player);
 			myAgent.send(message);
@@ -262,6 +253,8 @@ public class GameTable extends Agent{
 			
 			ACLMessage message = myAgent.receive(turnTemplate);
 			if(message != null){
+				Deck deck = Deck.getInstance();
+				deck.collectCards(GameTable.this.cards);
 				GameTable.this.currentRound = new Round(GameTable.this);
 				GameTable.this.currentRound.startRound();
 				GameTable.this.startGame();
