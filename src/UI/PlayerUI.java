@@ -19,9 +19,6 @@ import agent.Player;
 
 public class PlayerUI extends JFrame {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4213113937500262395L;
 
 	private Player myAgent;
@@ -37,9 +34,7 @@ public class PlayerUI extends JFrame {
 	private JList list;
 
 	private JLabel tabCards;
-
 	private JLabel myCards;
-
 	private JLabel turnMessage;
 
 	public PlayerUI(Player player2) {

@@ -52,7 +52,13 @@ public class PlayingPlayerUI extends JFrame {
 		tableCards = new JLabel("Cartas da mesa");
 		tableCards.setBounds(244, 27, 121, 15);
 		getContentPane().add(tableCards);
+
 		
+		message = new JLabel();
+		message.setBounds(167, 5, 155, 22);
+		
+		getContentPane().add(message);
+		getContentPane().add(tableCards);
 		getContentPane().add(cardsPanel);
 		
 		newCardBtn = new JButton("Pegar Carta");
