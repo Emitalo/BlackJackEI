@@ -1,10 +1,15 @@
 package UI;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import agent.Player;
+
+import javax.swing.JButton;
 
 public class PlayingPlayerUI extends JFrame {
 
@@ -17,38 +22,61 @@ public class PlayingPlayerUI extends JFrame {
 	private JLabel myCards;
 	private JLabel tableCards;
 	private JLabel message;
+
+	private JButton newCardBtn;
+	private JButton standBtn;
+	private JButton newRoundBtn;
 	
-	public PlayingPlayerUI(Player player){
+	public PlayingPlayerUI(final Player player){
 		this.player = player;
 		
 		getContentPane().setLayout(null);
 		
 		cardsPanel = new JPanel();
-		cardsPanel.setBounds(93, 65, 287, 138);
+		cardsPanel.setBounds(93, 54, 287, 138);
 		cardsPanel.setLayout(null);
 
 		playerName = new JLabel("Nome");
-		playerName.setBounds(121, 50, 100, 15);
+		playerName.setBounds(117, 27, 100, 15);
 		getContentPane().add(playerName);
 		this.playerName.setText(player.playerName);
 		
-		tabCards = new JLabel("New label");
+		tabCards = new JLabel("");
 		tabCards.setBounds(167, 5, 110, 15);
 		this.cardsPanel.add(tabCards);
 		
-		myCards = new JLabel("New label");
+		myCards = new JLabel("");
 		myCards.setBounds(12, 5, 110, 15);
 		this.cardsPanel.add(myCards);
 		
 		tableCards = new JLabel("Cartas da mesa");
-		tableCards.setBounds(243, 50, 121, 15);
+		tableCards.setBounds(244, 27, 121, 15);
 		getContentPane().add(tableCards);
 		
 		getContentPane().add(cardsPanel);
+		
+		newCardBtn = new JButton("Pegar Carta");
+		newCardBtn.setBounds(51, 204, 148, 25);
+		getContentPane().add(newCardBtn);
+		
+		standBtn = new JButton("Não pegar mais");
+		standBtn.setBounds(232, 204, 148, 25);
+		getContentPane().add(standBtn);
+		
+		newRoundBtn = new JButton("Nova Rodada");
+		newRoundBtn.setBounds(152, 241, 148, 25);
+		getContentPane().add(newRoundBtn);
+		
+		newCardBtn.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				player.getNewCard();
+			}
+		} );
 	}
 	
 	public void showPlayerCard(String card){
-		this.myCards.setText(card);
+		String cards = this.myCards.getText();
+		this.myCards.setText(cards + "\n" + card);
 		this.update(getGraphics());
 	}
 	

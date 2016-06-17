@@ -122,21 +122,23 @@ public class GameTable extends Agent{
 	}
 	
 	public void startGame(){
-		// Get a card on deck
-		Deck deck = Deck.getInstance();
-		Card card = deck.getTopCard();
 		ArrayList<Card> cards = new ArrayList<Card>();
+		Card card = this.getNewCard();
 		cards.add(card);
-		card = deck.getTopCard();
+		card = this.getNewCard();
 		cards.add(card);
-		this.getRealValues(cards);
 		this.addBehaviour(new ShowCardAndPassBehaviour(cards));
 	}
-
-	private void getRealValues(ArrayList<Card> cards) {
-		for (Card card : cards) {
-			this.points += card.getRealValue();
+	
+	private Card getNewCard(){
+		Deck deck = Deck.getInstance();
+		Card card = deck.getTopCard();
+		this.points += card.getRealValue();
+		
+		if(this.points >= 21){
+			this.current_round.endCurrentRound();
 		}
+		return card;
 	}
 
 	private class ShowCardAndPassBehaviour extends OneShotBehaviour{
@@ -164,4 +166,11 @@ public class GameTable extends Agent{
 		
 	}
 	
+	public Integer getPoints() {
+		return points;
+	}
+
+	public Integer getPlayerPoints() {
+		return playerPoints;
+	}
 }

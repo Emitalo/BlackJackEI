@@ -174,9 +174,8 @@ public class Player extends Agent {
 				Player.this.playingPlayerUI.showTableCard(message.getContent());
 
 				reply.setPerformative(ACLMessage.INFORM);
-				String card = Player.this.playRound();
+				Player.this.playFirstRound();
 				reply.setContent(Player.this.points.toString());
-				Player.this.playingPlayerUI.showPlayerCard(card);
 
 				reply.setConversationId("your-turn");
 				myAgent.send(reply);
@@ -187,18 +186,20 @@ public class Player extends Agent {
 		}
 	}
 	
-	public String playRound(){
-		String message = "";
-		Deck deck = Deck.getInstance();
-		
+	public void playFirstRound(){
+		this.getNewCard();
+		this.getNewCard();
+	}
+
+	public void getNewCard() {
+		Deck deck = Deck.getInstance();		
 		Card card = deck.getTopCard();
-		message += "\n" + card.toString();
-		this.points += card.getRealValue();
 		
-		card = deck.getTopCard();
 		this.points += card.getRealValue();
-		message += "\n" + card.toString();
+		this.playingPlayerUI.showPlayerCard(card.toString());
 		
-		return message;
+		if(this.points >= 21){
+			// Mandar para a mesa
+		}
 	}
 }
