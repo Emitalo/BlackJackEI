@@ -228,6 +228,24 @@ public class Player extends Agent {
 			}else{
 				this.block();
 			}
+			
+			MessageTemplate over21Template = MessageTemplate.and(
+				MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+				MessageTemplate.MatchConversationId(GameTable.OVER_21)
+			);
+			
+			ACLMessage over21Msg = myAgent.receive(over21Template);
+			
+			if(over21Msg != null){
+				
+				System.out.println("A mesa" + over21Msg.getSender().getName() + " perdeu. Passou de 21!");
+				
+				String over21 = over21Msg.getContent();
+				Player.this.playingPlayerUI.update(over21);
+				
+			}else{
+				this.block();
+			}
 		}
 	}
 	
