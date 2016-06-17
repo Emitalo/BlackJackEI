@@ -29,8 +29,8 @@ public class GameTable extends Agent{
 
 	public final static int MAX_PLAYERS = 1;
 	public static final String TABLE_TO_PLAYER_TURN = "table-to-player";
-
 	public static final String GAME_TABLE_CARDS = "game-table-cards";
+	public static final String OVER_21 = "Passou de 21!";
 
 	private AID player = null;
 
@@ -126,15 +126,20 @@ public class GameTable extends Agent{
 	}
 	
 	public void startGame(){
-		ArrayList<Card> cards = new ArrayList<Card>();
-		Card card = this.getNewCard();
-		cards.add(card);
-		card = this.getNewCard();
-		cards.add(card);
-		this.addBehaviour(new InitGame(cards));
+		try{
+			ArrayList<Card> cards = new ArrayList<Card>();
+			Card card;
+			card = this.getNewCard();
+			cards.add(card);
+			card = this.getNewCard();
+			cards.add(card);
+			this.addBehaviour(new InitGame(cards));
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	
-	private Card getNewCard(){
+	private Card getNewCard() throws Exception{
 		Deck deck = Deck.getInstance();
 		Card card = deck.getTopCard();
 		
@@ -143,8 +148,12 @@ public class GameTable extends Agent{
 		
 		this.points += card.getRealValue();
 		
+		System.out.println("Pontos até agora: " + this.points);
+		
 		if(this.points >= 21){
 			this.currentRound.endCurrentRound();
+			
+			throw new Exception(GameTable.OVER_21);
 		}
 
 		return card;
@@ -214,13 +223,26 @@ public class GameTable extends Agent{
 		}
 		
 		private void getAndSendCard(ACLMessage message){
-			
-			Card card = GameTable.this.getNewCard();
+
+			String content = "";
+			String conversationId = "";
+
+			try{
+				// Provisory - Just to test.. take it out
+				GameTable.this.points = 22;
+
+				Card card = GameTable.this.getNewCard();
+				content = card.toString();
+				conversationId = GameTable.GAME_TABLE_CARDS;
+			}catch(Exception e){
+				content = e.getMessage();
+				conversationId = GameTable.OVER_21;
+			}
 			
 			ACLMessage reply = message.createReply();
 			reply.setPerformative(ACLMessage.INFORM);
-			reply.setContent(card.toString());
-			reply.setConversationId(GameTable.GAME_TABLE_CARDS);
+			reply.setContent(content);
+			reply.setConversationId(conversationId);
 			myAgent.send(reply);
 		}
 		
