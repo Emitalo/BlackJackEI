@@ -38,6 +38,24 @@ public class Card {
 		this.value = value;
 	}
 	
+	public Integer getRealValue(){
+		
+		Integer realValue = 0;
+		String value = this.getValue();
+		
+		if(value == "J" || value == "Q" || value == "K"){
+			realValue = 10;
+		}
+		else if(value == "A"){
+			realValue = 1;
+		}
+		else{
+			realValue = new Integer(value);
+		}
+		
+		return realValue;
+	}
+	
 	@Override
 	public String toString(){
 		return this.value + " de " + this.suit;

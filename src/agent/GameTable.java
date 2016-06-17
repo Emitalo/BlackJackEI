@@ -1,9 +1,11 @@
+package agent;
 
 
 import java.util.ArrayList;
 
 import domain.Card;
 import domain.Deck;
+import domain.Round;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -30,10 +32,15 @@ public class GameTable extends Agent{
 	public final static int MAX_PLAYERS = 1;
 
 	private AID player = null;
+	private Round current_round;
+	private ArrayList<Round> rounds = new ArrayList<Round>();
+	private Integer points = 0;
+	private Integer playerPoints = 10;
 	
 	@Override
 	protected void setup() {
 		this.makeTableAvailable();
+		this.current_round = new Round(this);
 		addBehaviour(new JoinPlayersBehaviour());
 	}
 	
@@ -118,23 +125,38 @@ public class GameTable extends Agent{
 		// Get a card on deck
 		Deck deck = Deck.getInstance();
 		Card card = deck.getTopCard();
-		this.addBehaviour(new ShowCardAndPassBehaviour(card));
+		ArrayList<Card> cards = new ArrayList<Card>();
+		cards.add(card);
+		card = deck.getTopCard();
+		cards.add(card);
+		this.getRealValues(cards);
+		this.addBehaviour(new ShowCardAndPassBehaviour(cards));
+	}
+
+	private void getRealValues(ArrayList<Card> cards) {
+		for (Card card : cards) {
+			this.points += card.getRealValue();
+		}
 	}
 
 	private class ShowCardAndPassBehaviour extends OneShotBehaviour{
 
-		private Card card;
-		public ShowCardAndPassBehaviour(Card card) {
+		private ArrayList<Card> cards = new ArrayList<Card>();
+		public ShowCardAndPassBehaviour(ArrayList<Card> cards) {
 			super();
-			this.card = card;
+			this.cards = cards;
 		}
 
 		@Override
 		public void action() {
-//			MessageTemplate informTemplate = MessageTemplate.MatchConversationId();
 			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
 			
-			message.setContent("Cartas da mesa: \n " + card.toString() + "\n Sua vez.");
+			String content = "";
+			for (Card card : cards) {
+				content += "\n" + card.toString();
+			}
+			
+			message.setContent(content);
 			message.setConversationId("your-turn");
 			message.addReceiver(GameTable.this.player);
 			myAgent.send(message);
