@@ -31,15 +31,15 @@ public class GameTable extends Agent{
 	public static final String TABLE_TO_PLAYER_TURN = "table-to-player";
 
 	private AID player = null;
-	private Round current_round;
-	private ArrayList<Round> rounds = new ArrayList<Round>();
-	private Integer points = 0;
-	private Integer playerPoints = 10;
+	private Round currentRound;
+	public boolean firstRound = true;
+	public Integer points = 0;
+	public Integer playerPoints = 0;
 	
 	@Override
 	protected void setup() {
 		this.makeTableAvailable();
-		this.current_round = new Round(this);
+		this.currentRound = new Round(this);
 		addBehaviour(new JoinPlayersBehaviour());
 	}
 	
@@ -135,7 +135,7 @@ public class GameTable extends Agent{
 		this.points += card.getRealValue();
 		
 		if(this.points >= 21){
-			this.current_round.endCurrentRound();
+			this.currentRound.endCurrentRound();
 		}
 		return card;
 	}
@@ -191,9 +191,33 @@ public class GameTable extends Agent{
 			if(message != null){
 				
 				System.out.println("A mesa " + GameTable.this.getName() + " recebeu o INFORM do player " + message.getSender());
-				
+				GameTable.this.addBehaviour(new StartRoundBehaviour());		
 				String playerPoints =  message.getContent();
 				
+			}else{
+				this.block();
+			}
+		}
+		
+	}
+	
+	private class StartRoundBehaviour extends CyclicBehaviour{
+
+		private static final long serialVersionUID = 429285396743326047L;
+
+		@Override
+		public void action(){
+			
+			MessageTemplate turnTemplate = MessageTemplate.and(
+				MessageTemplate.MatchPerformative(ACLMessage.REQUEST),
+				MessageTemplate.MatchConversationId("new-round")
+			);
+			
+			ACLMessage message = myAgent.receive(turnTemplate);
+			if(message != null){
+				GameTable.this.currentRound = new Round(GameTable.this);
+				GameTable.this.currentRound.startRound();
+				GameTable.this.startGame();
 			}else{
 				this.block();
 			}
