@@ -1,9 +1,5 @@
 package agent;
 import java.util.ArrayList;
-import java.io.ObjectOutputStream;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -32,13 +28,11 @@ public class Player extends Agent {
 	
 	private ArrayList<ACLMessage> seenReplies = new ArrayList<ACLMessage>();
 	private AID[] tables;
-	private AID bestTable = null;
-	private ArrayList<ACLMessage> proposeReplies = new ArrayList<ACLMessage>();
-
 	public String playerName;
 	private Integer points = 0;
-
 	private boolean isPlayerTurn = true;
+	public AID table;
+	public boolean firstRound = true;
 	
 	@Override
 	protected void setup(){
@@ -78,11 +72,7 @@ public class Player extends Agent {
 		}
 
 		private static final long serialVersionUID = 5073894079459687671L;
-			
-		private boolean allTablesChecked(){
-			return Player.this.seenReplies.size() >= Player.this.tables.length;
-		}
-		
+				
 		@Override
 		protected void onTick() {
 			ACLMessage reply = myAgent.receive(this.mt);
@@ -112,6 +102,8 @@ public class Player extends Agent {
 					// Create the screen to play
 					playingPlayerUI = new PlayingPlayerUI(Player.this);
 					playingPlayerUI.showGui();
+					
+					Player.this.table = reply.getSender();
 					
 					// Start the player behaviour to play the game
 					Player.this.addBehaviour(new Play());
@@ -183,7 +175,10 @@ public class Player extends Agent {
 				
 				Player.this.playingPlayerUI.showTableCard(message.getContent());
 				
-				Player.this.playFirstRound();
+				if(firstRound){
+					Player.this.playFirstRound();
+					Player.this.firstRound = false;
+				}
 				
 				// While still player turn, hold on
 				while(Player.this.isPlayerTurn){
@@ -214,7 +209,7 @@ public class Player extends Agent {
 	}
 	
 	public void playFirstRound(){
-//		this.getNewCard();
+		this.getNewCard();
 		this.getNewCard();
 	}
 
@@ -234,4 +229,26 @@ public class Player extends Agent {
 		System.out.println("Player " + this.playerName + " passou a vez.");
 		this.isPlayerTurn  = false;
 	}
+
+	public void startNewRound() {
+		this.addBehaviour(new StartRoundBehaviour());
+		
+	}
+		
+	private class StartRoundBehaviour extends OneShotBehaviour{
+
+		@Override
+		public void action() {
+			ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
+					
+			message.setConversationId("new-round");
+			message.addReceiver(Player.this.table);
+			myAgent.send(message);
+			String messageToPlayer = "Solicitando nova rodada";
+			Player.this.firstRound = true;
+			System.out.println(messageToPlayer);
+			playingPlayerUI.update(messageToPlayer);
+		}
+	}
+
 }

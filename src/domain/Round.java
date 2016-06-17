@@ -10,6 +10,7 @@ public class Round {
 	public Round(GameTable gameTable) {
 		
 		this.gameTable = gameTable;
+
 	}
 	
 	public void endCurrentRound(){
@@ -42,5 +43,11 @@ public class Round {
 		else{
 			this.winner = "";
 		}
+	}
+	
+	public void startRound(){
+		this.gameTable.points = 0;
+		this.gameTable.playerPoints = 0;
+		this.gameTable.firstRound = true;
 	}
 }

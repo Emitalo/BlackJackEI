@@ -55,7 +55,7 @@ public class PlayingPlayerUI extends JFrame {
 
 		
 		message = new JLabel();
-		message.setBounds(167, 5, 155, 22);
+		message.setBounds(117, 0, 248, 22);
 		
 		getContentPane().add(message);
 		getContentPane().add(tableCards);
@@ -82,6 +82,12 @@ public class PlayingPlayerUI extends JFrame {
 		newCardBtn.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				player.getNewCard();
+			}
+		} );
+		
+		newRoundBtn.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				player.startNewRound();
 			}
 		} );
 	}
