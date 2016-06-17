@@ -1,3 +1,4 @@
+package agent;
 import jade.core.Agent;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
@@ -5,6 +6,7 @@ import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
+
 
 public class InitAgent extends Agent {
 
@@ -28,13 +30,13 @@ public class InitAgent extends Agent {
         AgentController gameTable1, gameTable2, player1, player2, player3, player4, player5, player6, player7,
         				player8, player9, player10;
         try {
-            gameTable1 = cc.createNewAgent("Table1", "GameTable", args);
+            gameTable1 = cc.createNewAgent("Table1", "agent.GameTable", args);
             gameTable1.start();
             
 //            gameTable2 = cc.createNewAgent("Table2", "GameTable", args);
 //            gameTable2.start();
 //            
-            player1 = cc.createNewAgent("Player1", "Player", args);
+            player1 = cc.createNewAgent("Player1", "agent.Player", args);
             player1.start();
 //            
 //            player2 = cc.createNewAgent("Player2", "Player", args);

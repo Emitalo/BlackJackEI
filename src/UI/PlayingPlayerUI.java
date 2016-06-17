@@ -1,7 +1,10 @@
+package UI;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import agent.Player;
 
 public class PlayingPlayerUI extends JFrame {
 

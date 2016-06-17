@@ -1,3 +1,4 @@
+package UI;
 
 
 import jade.core.AID;
@@ -13,6 +14,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JList;
+
+import agent.Player;
 
 public class PlayerUI extends JFrame {
 
@@ -67,20 +70,16 @@ public class PlayerUI extends JFrame {
 		playerName = new JLabel("Nome");
 		playerName.setBounds(121, 50, 100, 15);
 		getContentPane().add(playerName);
-//		
-//		tabCards = new JLabel("New label");
-//		tabCards.setBounds(167, 5, 110, 15);
-//		
-//		myCards = new JLabel("New label");
-//		myCards.setBounds(12, 5, 110, 15);
-//		
-//		tableCards = new JLabel("Cartas da mesa");
-//		tableCards.setBounds(243, 50, 121, 15);
-
-//		turnMessage = new JLabel("");
-//		turnMessage.setBounds(54, 12, 213, 15);
-//		panel.add(turnMessage);
 		
+		tabCards = new JLabel("New label");
+		tabCards.setBounds(167, 5, 110, 15);
+		
+		myCards = new JLabel("New label");
+		myCards.setBounds(12, 5, 510, 15);
+		
+		tableCards = new JLabel("Cartas da mesa");
+		tableCards.setBounds(243, 50, 121, 15);
+
 		findTableBtn.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				myAgent.joinTable(name.getText());
@@ -100,7 +99,7 @@ public class PlayerUI extends JFrame {
 		this.remove(findTableBtn);
 		this.remove(name);
 		this.remove(this.message);
-		this.playerName.setText(name.getText());
+		this.playerName.setText("Cartas de " + name.getText());
 		getContentPane().add(cardsPanel);
 		this.update(getGraphics());
 	}

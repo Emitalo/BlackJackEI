@@ -1,10 +1,14 @@
+package UI;
 import java.awt.BorderLayout;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import jade.core.AID;
+
 import javax.swing.JLabel;
+
+import agent.Player;
 
 
 public class PlayerTableUI extends JFrame{

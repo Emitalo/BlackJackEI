@@ -1,3 +1,10 @@
+package agent;
+import java.util.ArrayList;
+import java.io.ObjectOutputStream;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -10,10 +17,10 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
-import java.util.ArrayList;
-
 import domain.Card;
 import domain.Deck;
+import UI.PlayerUI;
+import UI.PlayingPlayerUI;
 
 public class Player extends Agent {
 
@@ -28,6 +35,7 @@ public class Player extends Agent {
 	private ArrayList<ACLMessage> proposeReplies = new ArrayList<ACLMessage>();
 
 	public String playerName;
+	private Integer points = 0;
 	
 	@Override
 	protected void setup(){
@@ -167,7 +175,7 @@ public class Player extends Agent {
 
 				reply.setPerformative(ACLMessage.INFORM);
 				String card = Player.this.playRound();
-				reply.setContent(card);
+				reply.setContent(Player.this.points.toString());
 				Player.this.playingPlayerUI.showPlayerCard(card);
 
 				reply.setConversationId("your-turn");
@@ -180,9 +188,17 @@ public class Player extends Agent {
 	}
 	
 	public String playRound(){
+		String message = "";
 		Deck deck = Deck.getInstance();
-		Card card = deck.getTopCard();
 		
-		return card.toString();
+		Card card = deck.getTopCard();
+		message += "\n" + card.toString();
+		this.points += card.getRealValue();
+		
+		card = deck.getTopCard();
+		this.points += card.getRealValue();
+		message += "\n" + card.toString();
+		
+		return message;
 	}
 }
