@@ -108,6 +108,10 @@ public class PlayingPlayerUI extends JFrame {
 		this.message.setText(message);
 		this.update(getGraphics());
 	}
+	
+	public void addTableCard(String card){
+		
+	}
 
 	public void showGui(){
 		pack();
