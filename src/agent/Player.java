@@ -18,6 +18,8 @@ import UI.PlayerUI;
 import UI.PlayingPlayerUI;
 import domain.Card;
 import domain.Deck;
+import exception.OverTwentOneException;
+import exception.TwentOneException;
 
 public class Player extends Agent {
 
@@ -36,6 +38,8 @@ public class Player extends Agent {
 	public AID table;
 	public boolean firstRound = true;
 	private ArrayList<Card> cards = new ArrayList<Card>();
+
+	public boolean alreadyInTable = false;
 
 	@Override
 	protected void setup(){
@@ -81,22 +85,26 @@ public class Player extends Agent {
 			ACLMessage reply = myAgent.receive(this.mt);
 			if(reply != null){
 				Player.this.seenReplies.add(reply);
-				if (reply.getPerformative() == ACLMessage.PROPOSE) {
-										
-					String tablePlayersQuantity = reply.getContent();
-					String turn = reply.getContent();
-					AID tableToJoin = reply.getSender();	
-					// Accept the propose to join the table
-
-					searchForTableUI.update("Tentando entrar na mesa " + tableToJoin.getName());
-					ACLMessage joinTableRequest = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
-					joinTableRequest.addReceiver(tableToJoin);
-					joinTableRequest.setContent(Player.this.playerName);
-					joinTableRequest.setConversationId("join-table");
-					myAgent.send(joinTableRequest);
+				if (reply.getPerformative() == ACLMessage.PROPOSE) {				
 					
-					// Stop ticker to stop looking for tables
-					this.done();
+					if(!Player.this.alreadyInTable){
+						String tablePlayersQuantity = reply.getContent();
+						String turn = reply.getContent();
+						AID tableToJoin = reply.getSender();	
+						// Accept the propose to join the table
+	
+						searchForTableUI.update("Tentando entrar na mesa " + tableToJoin.getName());
+						ACLMessage joinTableRequest = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
+						joinTableRequest.addReceiver(tableToJoin);
+						joinTableRequest.setContent(Player.this.playerName);
+						joinTableRequest.setConversationId("join-table");
+						myAgent.send(joinTableRequest);
+						
+						Player.this.alreadyInTable  = true;
+						
+						// Stop ticker to stop looking for tables
+						this.done();
+					}
 				}
 				else if(reply.getPerformative() == ACLMessage.INFORM){
 					// Player accepted to play, so dispose the screen to search for a game table
@@ -114,7 +122,6 @@ public class Player extends Agent {
 				else if(reply.getPerformative() == ACLMessage.INFORM_REF){
 					
 					searchForTableUI.update(reply.getContent());
-
 				}
 				else{
 					// In this case the propose was refused
@@ -172,6 +179,8 @@ public class Player extends Agent {
 			
 			ACLMessage message = myAgent.receive(turnTemplate);
 			if(message != null){
+				
+				Player.this.isPlayerTurn = true;
 				
 				Player.this.playingPlayerUI.update(Player.this.playerName + ", sua vez!");
 				System.out.println("Player "+ Player.this.playerName + " recebeu o INFORM que pode jogar.");
@@ -234,6 +243,7 @@ public class Player extends Agent {
 				this.block();
 			}
 			
+			// Block to get when the table is over 21
 			MessageTemplate over21Template = MessageTemplate.and(
 				MessageTemplate.MatchPerformative(ACLMessage.INFORM),
 				MessageTemplate.MatchConversationId(GameTable.OVER_21)
@@ -251,6 +261,26 @@ public class Player extends Agent {
 			}else{
 				this.block();
 			}
+			
+			
+			// Block to get when the table wins
+			MessageTemplate showTableWinTemplate = MessageTemplate.and(
+				MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+				MessageTemplate.MatchConversationId(GameTable.WINNER_21)
+			);
+			
+			ACLMessage winMsg = myAgent.receive(showTableWinTemplate);
+			
+			if(winMsg != null){
+				
+				System.out.println("A mesa" + winMsg.getSender().getName() + " ganhou. Conseguiu 21!");
+				
+				String win = winMsg.getContent();
+				Player.this.playingPlayerUI.update(win);
+				Player.this.playingPlayerUI.enableOnlyNewRound();
+			}else{
+				this.block();
+			}
 		}
 	}
 	
@@ -258,7 +288,7 @@ public class Player extends Agent {
 		this.getNewCard();
 	}
 
-	public void getNewCard() throws Exception {
+	public void getNewCard() throws OverTwentOneException, TwentOneException{
 		Deck deck = Deck.getInstance();		
 		Card card = deck.getRandCard();
 		
@@ -268,8 +298,10 @@ public class Player extends Agent {
 		this.points += card.getRealValue();
 		this.playingPlayerUI.showPlayerCard(card.toString());
 		
-		if(this.points >= 21){
-			throw new Exception(GameTable.OVER_21);
+		if(this.points > 21){
+			throw new OverTwentOneException(GameTable.OVER_21);
+		}else if(this.points == 21){
+			throw new TwentOneException(GameTable.WINNER_21);
 		}
 	}
 
@@ -283,18 +315,22 @@ public class Player extends Agent {
 	}
 		
 	private class StartRoundBehaviour extends OneShotBehaviour{
+		
+		private static final long serialVersionUID = -7200175914024292321L;
 
 		@Override
 		public void action() {
 			ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
-					
+			Player.this.firstRound = true;
+			Player.this.points = 0;
 			message.setConversationId("new-round");
 			message.addReceiver(Player.this.table);
 			myAgent.send(message);
+			
 			String messageToPlayer = "Solicitando nova rodada";
-			Player.this.firstRound = true;
 			Deck deck = Deck.getInstance();
 			deck.collectCards(Player.this.cards);
+			Player.this.cards.clear();
 			System.out.println(messageToPlayer);
 			playingPlayerUI.update(messageToPlayer);
 		}
