@@ -37,6 +37,8 @@ public class Player extends Agent {
 
 	public String playerName;
 	private Integer points = 0;
+
+	private boolean isPlayerTurn = true;
 	
 	@Override
 	protected void setup(){
@@ -166,7 +168,7 @@ public class Player extends Agent {
 
 		@Override
 		public void action() {
-			
+
 			// Try to match the table request informing that is this player turn
 			MessageTemplate turnTemplate = MessageTemplate.and(
 				MessageTemplate.MatchPerformative(ACLMessage.INFORM),
@@ -177,30 +179,42 @@ public class Player extends Agent {
 			if(message != null){
 				
 				Player.this.playingPlayerUI.update(Player.this.playerName + ", sua vez!");
-				
 				System.out.println("Player "+ Player.this.playerName + " recebeu o INFORM que pode jogar.");
-				ACLMessage reply = message.createReply();
-				AID table = message.getSender();
-
+				
 				Player.this.playingPlayerUI.showTableCard(message.getContent());
-
-				reply.setPerformative(ACLMessage.INFORM);
-
+				
 				Player.this.playFirstRound();
-				reply.setContent(Player.this.points.toString());
-
-				reply.setConversationId(Player.PLAYER_TO_TABLE_TURN);
-
-				myAgent.send(reply);
+				
+				// While still player turn, hold on
+				while(Player.this.isPlayerTurn){
+					System.out.println("Still player turn..");
+				}
+				
+				if(!Player.this.isPlayerTurn){
+					
+					System.out.println("Player standed, informing table...");
+					
+					ACLMessage reply = message.createReply();
+					AID table = message.getSender();
+	
+					reply.setPerformative(ACLMessage.INFORM);
+	
+					reply.setContent(Player.this.points.toString());
+	
+					reply.setConversationId(Player.PLAYER_TO_TABLE_TURN);
+	
+					myAgent.send(reply);
+				}
 			}
 			else{
+				System.out.println("Blocking Play()");
 				this.block();
 			}
 		}
 	}
 	
 	public void playFirstRound(){
-		this.getNewCard();
+//		this.getNewCard();
 		this.getNewCard();
 	}
 
@@ -214,5 +228,10 @@ public class Player extends Agent {
 		if(this.points >= 21){
 			// Mandar para a mesa
 		}
+	}
+
+	public void stand(){
+		System.out.println("Player " + this.playerName + " passou a vez.");
+		this.isPlayerTurn  = false;
 	}
 }

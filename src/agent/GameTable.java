@@ -192,6 +192,7 @@ public class GameTable extends Agent{
 				
 				System.out.println("A mesa " + GameTable.this.getName() + " recebeu o INFORM do player " + message.getSender());
 				
+				String playerPoints =  message.getContent();
 				
 			}else{
 				this.block();

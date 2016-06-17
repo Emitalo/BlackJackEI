@@ -69,6 +69,12 @@ public class PlayingPlayerUI extends JFrame {
 		standBtn.setBounds(232, 204, 148, 25);
 		getContentPane().add(standBtn);
 		
+		standBtn.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				player.stand();
+			}
+		} );
+		
 		newRoundBtn = new JButton("Nova Rodada");
 		newRoundBtn.setBounds(152, 241, 148, 25);
 		getContentPane().add(newRoundBtn);
