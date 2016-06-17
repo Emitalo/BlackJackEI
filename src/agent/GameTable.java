@@ -25,11 +25,10 @@ import jade.lang.acl.MessageTemplate;
  */
 public class GameTable extends Agent{
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5076427523762979450L;
+
 	public final static int MAX_PLAYERS = 1;
+	public static final String TABLE_TO_PLAYER_TURN = "table-to-player";
 
 	private AID player = null;
 	private Round current_round;
@@ -127,7 +126,7 @@ public class GameTable extends Agent{
 		cards.add(card);
 		card = this.getNewCard();
 		cards.add(card);
-		this.addBehaviour(new ShowCardAndPassBehaviour(cards));
+		this.addBehaviour(new InitGame(cards));
 	}
 	
 	private Card getNewCard(){
@@ -140,15 +139,22 @@ public class GameTable extends Agent{
 		}
 		return card;
 	}
+	 
+	/**
+	 *  The table game (dealer) initiates the game by showing it
+	 *  	cards and passing the turn to the player 
+	 */
+	private class InitGame extends OneShotBehaviour{
 
-	private class ShowCardAndPassBehaviour extends OneShotBehaviour{
-
+		private static final long serialVersionUID = 1195651792447082421L; 
+		
 		private ArrayList<Card> cards = new ArrayList<Card>();
-		public ShowCardAndPassBehaviour(ArrayList<Card> cards) {
+		
+		public InitGame(ArrayList<Card> cards) {
 			super();
 			this.cards = cards;
 		}
-
+		
 		@Override
 		public void action() {
 			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
@@ -159,9 +165,37 @@ public class GameTable extends Agent{
 			}
 			
 			message.setContent(content);
-			message.setConversationId("your-turn");
+			message.setConversationId(GameTable.TABLE_TO_PLAYER_TURN);
 			message.addReceiver(GameTable.this.player);
 			myAgent.send(message);
+			System.out.println("Mesa passando a vez para o player.");
+			
+			GameTable.this.addBehaviour(new ShowCardAndPassBehaviour());
+		}
+		
+	}
+
+	private class ShowCardAndPassBehaviour extends CyclicBehaviour{
+
+		private static final long serialVersionUID = 429285396743326047L;
+
+		@Override
+		public void action(){
+			
+			MessageTemplate turnTemplate = MessageTemplate.and(
+				MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+				MessageTemplate.MatchConversationId(Player.PLAYER_TO_TABLE_TURN)
+			);
+			
+			ACLMessage message = myAgent.receive(turnTemplate);
+			if(message != null){
+				
+				System.out.println("A mesa " + GameTable.this.getName() + " recebeu o INFORM do player " + message.getSender());
+				
+				
+			}else{
+				this.block();
+			}
 		}
 		
 	}

@@ -16,7 +16,6 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-
 import domain.Card;
 import domain.Deck;
 import UI.PlayerUI;
@@ -25,6 +24,8 @@ import UI.PlayingPlayerUI;
 public class Player extends Agent {
 
 	private static final long serialVersionUID = -1729142182071611776L;
+
+	public static final String PLAYER_TO_TABLE_TURN = "player-to-table";
 
 	private PlayerUI searchForTableUI;
 	private PlayingPlayerUI playingPlayerUI;
@@ -165,19 +166,31 @@ public class Player extends Agent {
 
 		@Override
 		public void action() {
-			MessageTemplate turnTemplate = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+			
+			// Try to match the table request informing that is this player turn
+			MessageTemplate turnTemplate = MessageTemplate.and(
+				MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+				MessageTemplate.MatchConversationId(GameTable.TABLE_TO_PLAYER_TURN)
+			);
+			
 			ACLMessage message = myAgent.receive(turnTemplate);
 			if(message != null){
+				
+				Player.this.playingPlayerUI.update(Player.this.playerName + ", sua vez!");
+				
+				System.out.println("Player "+ Player.this.playerName + " recebeu o INFORM que pode jogar.");
 				ACLMessage reply = message.createReply();
 				AID table = message.getSender();
 
 				Player.this.playingPlayerUI.showTableCard(message.getContent());
 
 				reply.setPerformative(ACLMessage.INFORM);
+
 				Player.this.playFirstRound();
 				reply.setContent(Player.this.points.toString());
 
-				reply.setConversationId("your-turn");
+				reply.setConversationId(Player.PLAYER_TO_TABLE_TURN);
+
 				myAgent.send(reply);
 			}
 			else{
