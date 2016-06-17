@@ -76,6 +76,8 @@ public class PlayingPlayerUI extends JFrame {
 		standBtn.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				player.stand();
+				standBtn.setEnabled(false);
+				newCardBtn.setEnabled(false);
 			}
 		} );
 		
@@ -89,7 +91,13 @@ public class PlayingPlayerUI extends JFrame {
 		
 		newCardBtn.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
-				player.getNewCard();
+				try{
+					player.getNewCard();
+				}catch (Exception e){
+					PlayingPlayerUI.this.update(PlayingPlayerUI.this.player.playerName + " passou de 21!");
+					PlayingPlayerUI.this.enableOnlyNewRound();
+					PlayingPlayerUI.this.player.stand();					
+				}
 			}
 		} );
 		
@@ -147,5 +155,10 @@ public class PlayingPlayerUI extends JFrame {
 		pack();
 		super.setBounds(100, 100, 450, 300);
 		super.setVisible(true);
+	}
+
+	public void enableOnlyNewRound(){
+		this.newCardBtn.setEnabled(false);
+		this.standBtn.setEnabled(false);
 	}
 }

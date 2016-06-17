@@ -1,6 +1,7 @@
 package domain;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Deck {
 	
@@ -42,6 +43,15 @@ public class Deck {
 	
 	public Card getTopCard(){
 		Card card = this.cards.remove(0);
+		return card;
+	}
+	
+	public Card getRandCard(){
+		
+		Random random = new Random();
+		int randIndex = random.nextInt(this.cards.size());
+		Card card = this.cards.remove(randIndex);
+		
 		return card;
 	}
 	

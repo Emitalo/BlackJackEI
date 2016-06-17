@@ -137,7 +137,7 @@ public class GameTable extends Agent{
 	
 	private Card getNewCard() throws Exception{
 		Deck deck = Deck.getInstance();
-		Card card = deck.getTopCard();
+		Card card = deck.getRandCard();
 		
 		// Save the card to get it back to the pool later
 		this.cards.add(card);
@@ -219,8 +219,6 @@ public class GameTable extends Agent{
 			String conversationId = "";
 
 			try{
-				// Provisory - Just to test.. take it out
-				GameTable.this.points = 22;
 
 				Card card = GameTable.this.getNewCard();
 				content = card.toString();

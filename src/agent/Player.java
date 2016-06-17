@@ -179,8 +179,12 @@ public class Player extends Agent {
 				Player.this.playingPlayerUI.addTableCard(message.getContent());
 				
 				if(firstRound){
-					Player.this.playFirstRound();
-					Player.this.firstRound = false;
+					try{
+						Player.this.playFirstRound();
+						Player.this.firstRound = false;
+					}catch(Exception e){
+						e.printStackTrace();
+					}
 				}
 				
 				// While still player turn, hold on
@@ -202,6 +206,9 @@ public class Player extends Agent {
 					reply.setConversationId(Player.PLAYER_TO_TABLE_TURN);
 	
 					myAgent.send(reply);
+					
+					// Set the notice that is the table turn to play
+					Player.this.playingPlayerUI.update("Vez da mesa.");
 				}
 			}
 			else{
@@ -240,20 +247,20 @@ public class Player extends Agent {
 				
 				String over21 = over21Msg.getContent();
 				Player.this.playingPlayerUI.update(over21);
-				
+				Player.this.playingPlayerUI.enableOnlyNewRound();
 			}else{
 				this.block();
 			}
 		}
 	}
 	
-	public void playFirstRound(){
+	public void playFirstRound() throws Exception{
 		this.getNewCard();
 	}
 
-	public void getNewCard() {
+	public void getNewCard() throws Exception {
 		Deck deck = Deck.getInstance();		
-		Card card = deck.getTopCard();
+		Card card = deck.getRandCard();
 		
 		// Save the card to get it back to the pool later
 		this.cards.add(card);
@@ -262,7 +269,7 @@ public class Player extends Agent {
 		this.playingPlayerUI.showPlayerCard(card.toString());
 		
 		if(this.points >= 21){
-			// Mandar para a mesa
+			throw new Exception(GameTable.OVER_21);
 		}
 	}
 
@@ -273,7 +280,6 @@ public class Player extends Agent {
 
 	public void startNewRound() {
 		this.addBehaviour(new StartRoundBehaviour());
-		
 	}
 		
 	private class StartRoundBehaviour extends OneShotBehaviour{
