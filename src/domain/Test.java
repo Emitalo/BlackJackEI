@@ -7,7 +7,7 @@ public class Test {
 		Deck deck = Deck.getInstance();
 		
 		while(!deck.getCards().isEmpty()){
-			System.out.println(deck.getTopCard());
+			System.out.println(deck.getRandCard());
 			deck = Deck.getInstance();
 		}
 	}
