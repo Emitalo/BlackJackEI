@@ -6,10 +6,13 @@ import java.awt.event.ActionListener;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 
 import agent.Player;
 
 import javax.swing.JButton;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 public class PlayingPlayerUI extends JFrame {
 
@@ -26,41 +29,42 @@ public class PlayingPlayerUI extends JFrame {
 	private JButton newCardBtn;
 	private JButton standBtn;
 	private JButton newRoundBtn;
+
+	private DefaultTableModel tableTableModel;
+
+	private JTable tableOfTableCards;
+	private JTable tableOfPlayerCards;
+
+	private DefaultTableModel playerTableModel;
 	
 	public PlayingPlayerUI(final Player player){
 		this.player = player;
 		
 		getContentPane().setLayout(null);
 		
-		cardsPanel = new JPanel();
-		cardsPanel.setBounds(93, 54, 287, 138);
-		cardsPanel.setLayout(null);
-
 		playerName = new JLabel("Nome");
 		playerName.setBounds(117, 27, 100, 15);
 		getContentPane().add(playerName);
 		this.playerName.setText(player.playerName);
-		
-		tabCards = new JLabel("");
-		tabCards.setBounds(167, 5, 110, 15);
-		this.cardsPanel.add(tabCards);
-		
-		myCards = new JLabel("");
-		myCards.setBounds(12, 5, 110, 15);
-		this.cardsPanel.add(myCards);
-		
-		tableCards = new JLabel("Cartas da mesa");
-		tableCards.setBounds(244, 27, 121, 15);
-		getContentPane().add(tableCards);
-
-		
+	
 		message = new JLabel();
 		message.setBounds(117, 0, 248, 22);
-		
 		getContentPane().add(message);
-		getContentPane().add(tableCards);
-		getContentPane().add(cardsPanel);
 		
+		String [] columnsTableCards = {"Cartas da mesa"};
+		
+		tableTableModel = new DefaultTableModel(null, columnsTableCards);			
+		tableOfTableCards = new JTable(tableTableModel);
+		tableOfTableCards.setBounds(245, 54, 160, 138);
+		getContentPane().add(tableOfTableCards);
+		
+		String [] columnsPlayerCards = {player.playerName};
+		
+		playerTableModel = new DefaultTableModel(null, columnsPlayerCards);	
+		tableOfPlayerCards = new JTable(playerTableModel);
+		tableOfPlayerCards.setBounds(51, 54, 166, 138);
+		getContentPane().add(tableOfPlayerCards);
+
 		newCardBtn = new JButton("Pegar Carta");
 		newCardBtn.setBounds(51, 204, 148, 25);
 		getContentPane().add(newCardBtn);
@@ -93,15 +97,10 @@ public class PlayingPlayerUI extends JFrame {
 	}
 	
 	public void showPlayerCard(String card){
-		String cards = this.myCards.getText();
-		this.myCards.setText(cards + "\n" + card);
-		this.update(getGraphics());
-	}
-	
-	public void showTableCard(String card){
+		String [] cards = new String[1];
+		cards[0] = card;
 		
-		this.tabCards.setText(card);
-		this.update(getGraphics());
+		playerTableModel.addRow(cards);
 	}
 	
 	public void update(String message){
@@ -110,7 +109,11 @@ public class PlayingPlayerUI extends JFrame {
 	}
 	
 	public void addTableCard(String card){
+	
+		String [] cards = new String[1];
+		cards[0] = card;
 		
+		tableTableModel.addRow(cards);
 	}
 
 	public void showGui(){

@@ -29,16 +29,14 @@ public class Player extends Agent {
 	private PlayingPlayerUI playingPlayerUI;
 	
 	private ArrayList<ACLMessage> seenReplies = new ArrayList<ACLMessage>();
-	private AID[] tables;
-	
-	private ArrayList<Card> cards = new ArrayList<Card>();
-	
+	private AID[] tables;	
 	public String playerName;
 	private Integer points = 0;
 	private boolean isPlayerTurn = true;
 	public AID table;
 	public boolean firstRound = true;
-	
+	private ArrayList<Card> cards = new ArrayList<Card>();
+
 	@Override
 	protected void setup(){
 		searchForTableUI = new PlayerUI(this);
@@ -178,7 +176,7 @@ public class Player extends Agent {
 				Player.this.playingPlayerUI.update(Player.this.playerName + ", sua vez!");
 				System.out.println("Player "+ Player.this.playerName + " recebeu o INFORM que pode jogar.");
 				
-				Player.this.playingPlayerUI.showTableCard(message.getContent());
+				Player.this.playingPlayerUI.addTableCard(message.getContent());
 				
 				if(firstRound){
 					Player.this.playFirstRound();
@@ -251,7 +249,6 @@ public class Player extends Agent {
 	
 	public void playFirstRound(){
 		this.getNewCard();
-		this.getNewCard();
 	}
 
 	public void getNewCard() {
@@ -290,6 +287,8 @@ public class Player extends Agent {
 			myAgent.send(message);
 			String messageToPlayer = "Solicitando nova rodada";
 			Player.this.firstRound = true;
+			Deck deck = Deck.getInstance();
+			deck.collectCards(Player.this.cards);
 			System.out.println(messageToPlayer);
 			playingPlayerUI.update(messageToPlayer);
 		}

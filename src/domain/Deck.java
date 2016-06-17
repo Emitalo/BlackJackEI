@@ -48,4 +48,9 @@ public class Deck {
 	public ArrayList<Card> getCards(){
 		return this.cards;
 	}
+	
+	public void collectCards(ArrayList<Card> cards){
+		System.out.print("Recolhendo cartas...");
+		this.cards.addAll(cards);
+	}
 }
