@@ -31,10 +31,13 @@ public class GameTable extends Agent{
 	public static final String TABLE_TO_PLAYER_TURN = "table-to-player";
 
 	private AID player = null;
+
 	private Round currentRound;
 	public boolean firstRound = true;
 	public Integer points = 0;
 	public Integer playerPoints = 0;
+
+	private ArrayList<Card> cards = new ArrayList<Card>();
 	
 	@Override
 	protected void setup() {
@@ -132,6 +135,10 @@ public class GameTable extends Agent{
 	private Card getNewCard(){
 		Deck deck = Deck.getInstance();
 		Card card = deck.getTopCard();
+		
+		// Save the card to get it back to the pool later
+		this.cards.add(card);
+		
 		this.points += card.getRealValue();
 		
 		if(this.points >= 21){
@@ -150,7 +157,7 @@ public class GameTable extends Agent{
 		
 		private ArrayList<Card> cards = new ArrayList<Card>();
 		
-		public InitGame(ArrayList<Card> cards) {
+		public InitGame(ArrayList<Card> cards){
 			super();
 			this.cards = cards;
 		}
@@ -160,7 +167,7 @@ public class GameTable extends Agent{
 			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
 			
 			String content = "";
-			for (Card card : cards) {
+			for (Card card : this.cards) {
 				content += "\n" + card.toString();
 			}
 			
