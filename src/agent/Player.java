@@ -27,6 +27,10 @@ public class Player extends Agent {
 
 	public static final String PLAYER_TO_TABLE_TURN = "player-to-table";
 
+	public static final String TABLE_WON = "table won";
+	public static final String TABLE_LOST = "table lost";
+	public static final String MATCH_IN_PROGRESS = "in progress";
+
 	private PlayerUI searchForTableUI;
 	private PlayingPlayerUI playingPlayerUI;
 	
@@ -40,6 +44,8 @@ public class Player extends Agent {
 	private ArrayList<Card> cards = new ArrayList<Card>();
 
 	public boolean alreadyInTable = false;
+
+	private String matchStatus;
 
 	@Override
 	protected void setup(){
@@ -206,18 +212,11 @@ public class Player extends Agent {
 					System.out.println("Player standed, informing table...");
 					
 					ACLMessage reply = message.createReply();
-					AID table = message.getSender();
 	
 					reply.setPerformative(ACLMessage.INFORM);
-	
-					reply.setContent(Player.this.points.toString());
-	
+					reply.setContent(Player.this.matchStatus);
 					reply.setConversationId(Player.PLAYER_TO_TABLE_TURN);
-	
 					myAgent.send(reply);
-					
-					// Set the notice that is the table turn to play
-					Player.this.playingPlayerUI.update("Vez da mesa.");
 				}
 			}
 			else{
@@ -255,7 +254,12 @@ public class Player extends Agent {
 				
 				System.out.println("A mesa" + over21Msg.getSender().getName() + " perdeu. Passou de 21!");
 				
-				String over21 = over21Msg.getContent();
+				
+				// Displaying the table card on PlayerUI
+				String tableCard = over21Msg.getContent();
+				Player.this.playingPlayerUI.addTableCard(tableCard);
+				
+				String over21 = "Mesa, " + GameTable.OVER_21;
 				Player.this.playingPlayerUI.update(over21);
 				Player.this.playingPlayerUI.enableOnlyNewRound();
 			}else{
@@ -275,7 +279,11 @@ public class Player extends Agent {
 				
 				System.out.println("A mesa" + winMsg.getSender().getName() + " ganhou. Conseguiu 21!");
 				
-				String win = winMsg.getContent();
+				// Displaying the table card on PlayerUI
+				String tableCard = winMsg.getContent();
+				Player.this.playingPlayerUI.addTableCard(tableCard);
+				
+				String win = GameTable.WINNER_21;
 				Player.this.playingPlayerUI.update(win);
 				Player.this.playingPlayerUI.enableOnlyNewRound();
 			}else{
@@ -308,6 +316,13 @@ public class Player extends Agent {
 	public void stand(){
 		System.out.println("Player " + this.playerName + " passou a vez.");
 		this.isPlayerTurn  = false;
+		this.matchStatus = MATCH_IN_PROGRESS;
+	}
+	
+	public void stand(String status){
+		System.out.println(status);
+		this.matchStatus = status;
+		this.isPlayerTurn  = false;
 	}
 
 	public void startNewRound() {
@@ -334,6 +349,14 @@ public class Player extends Agent {
 			System.out.println(messageToPlayer);
 			playingPlayerUI.update(messageToPlayer);
 		}
+	}
+
+	public void informTableWon(){
+		this.stand(Player.TABLE_WON);
+	}
+	
+	public void informTableLost(){
+		this.stand(Player.TABLE_LOST);
 	}
 
 }

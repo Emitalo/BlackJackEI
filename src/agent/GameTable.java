@@ -45,6 +45,7 @@ public class GameTable extends Agent{
 	private ArrayList<Card> cards = new ArrayList<Card>();
 
 	public boolean isTableTurn = true;
+	public boolean tableNeedsToPlay = true;
 	
 	@Override
 	protected void setup() {
@@ -209,19 +210,30 @@ public class GameTable extends Agent{
 			
 			ACLMessage message = myAgent.receive(turnTemplate);
 			if(message != null){
-				
-				// If player standed, is the table turn
-				GameTable.this.isTableTurn = true;
-				
-				System.out.println("A mesa " + GameTable.this.getName() + " recebeu o INFORM do player " + message.getSender());
 
-				// Increment the player points
-				GameTable.this.playerPoints +=  Integer.valueOf(message.getContent());
+				System.out.println("A mesa " + GameTable.this.getName() + " recebeu o INFORM do player " + message.getSender());
+								
+				String matchStatus = message.getContent();
 				
-				while(GameTable.this.isTableTurn){
-					System.out.println("Still table turn...");
-					this.getAndSendCard(message);
+				switch(matchStatus){
+					case Player.MATCH_IN_PROGRESS:
+						// If player standed, is the table turn
+						GameTable.this.isTableTurn = true;
+						while(GameTable.this.isTableTurn){
+							System.out.println("Still table turn...");
+							this.getAndSendCard(message);
+						}
+						break;
+					
+					case Player.TABLE_WON:
+					case Player.TABLE_LOST:
+						// The table loosing or winning, it does not need to play
+						break;
+
+					default:
+						break;
 				}
+				
 			}else{
 				this.block();
 			}
@@ -231,27 +243,28 @@ public class GameTable extends Agent{
 
 			String content = "";
 			String conversationId = "";
-			boolean isToSend = false;
 
 			try{
+
 				Card card = GameTable.this.getNewCard();
+				System.out.println("\nTable card: " + card + "\n");
 				content = card.toString();
 				conversationId = GameTable.GAME_TABLE_CARDS;
-				isToSend = true;
 			}catch(OverTwentOneException e){
-				content = e.getMessage();
+	
+				int lastCard = GameTable.this.cards.size() - 1;
+				content = GameTable.this.cards.get(lastCard).toString();
 				conversationId = GameTable.OVER_21;
 				System.out.println("Table over 21");
 				GameTable.this.isTableTurn = false;
 			}catch(TwentOneException e){
-				content = e.getMessage();
+
+				int lastCard = GameTable.this.cards.size() - 1;
+				content = GameTable.this.cards.get(lastCard).toString();
 				conversationId = GameTable.WINNER_21;
 				System.out.println("Table won! 21 made!");
 				GameTable.this.isTableTurn = false;
-				isToSend = true;
-			}
-			
-			if(GameTable.this.isTableTurn && isToSend){
+			}finally{
 				
 				ACLMessage reply = message.createReply();
 				reply.setPerformative(ACLMessage.INFORM);

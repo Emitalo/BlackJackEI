@@ -27,8 +27,8 @@ public class InitAgent extends Agent {
         // Create a new agent, a DummyAgent 
         // and pass it a reference to an Object  
         Object args[] = new Object[1];
-        AgentController gameTable1, gameTable2, player1, player2, player3, player4, player5, player6, player7,
-        				player8, player9, player10;
+        AgentController gameTable1, gameTable2, gameTable3, player1, player2, player3;
+        
         try {
             gameTable1 = cc.createNewAgent("Table1", "agent.GameTable", args);
             gameTable1.start();
@@ -36,37 +36,17 @@ public class InitAgent extends Agent {
             gameTable2 = cc.createNewAgent("Table2", "agent.GameTable", args);
             gameTable2.start();
 
+//            gameTable3 = cc.createNewAgent("Table3", "agent.GameTable", args);
+//            gameTable3.start();
+            
             player1 = cc.createNewAgent("Player1", "agent.Player", args);
             player1.start();
 
             player2 = cc.createNewAgent("Player2", "agent.Player", args);
             player2.start();
             
-//            player3 = cc.createNewAgent("Player3", "Player", args);
-//            player3.start();
-//            
-//            player4 = cc.createNewAgent("Player4", "Player", args);
-//            player4.start();
-//            
-//            player5 = cc.createNewAgent("Player5", "Player", args);
-//            player5.start();
-//            
-//            player6 = cc.createNewAgent("Player6", "Player", args);
-//            player6.start();
-//            
-//            player7 = cc.createNewAgent("Player7", "Player", args);
-//            player7.start();
-//            
-//            player8 = cc.createNewAgent("Player8", "Player", args);
-//            player8.start();
-//            
-//            
-//            player9 = cc.createNewAgent("Player9", "Player", args);
-//            player9.start();
-//            
-//            
-//            player10 = cc.createNewAgent("Player10", "Player", args);
-//            player10.start();
+            player3 = cc.createNewAgent("Player3", "agent.Player", args);
+            player3.start();
             
         } catch (StaleProxyException e) {
             // TODO Auto-generated catch block

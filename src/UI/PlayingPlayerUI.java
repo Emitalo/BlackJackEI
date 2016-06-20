@@ -98,12 +98,17 @@ public class PlayingPlayerUI extends JFrame {
 				try{
 					player.getNewCard();
 				}catch (OverTwentOneException e){
+					
+					// If the player is over 21, the table won
 					PlayingPlayerUI.this.update(PlayingPlayerUI.this.player.playerName + " passou de 21!");
 					PlayingPlayerUI.this.enableOnlyNewRound();
-					PlayingPlayerUI.this.player.stand();
+					PlayingPlayerUI.this.player.informTableWon();
 				}catch(TwentOneException e){
+					
+					// If the player made 21, the table lost
 					PlayingPlayerUI.this.update(PlayingPlayerUI.this.player.playerName + " fez 21! Ganhou!");
 					PlayingPlayerUI.this.enableOnlyNewRound();
+					PlayingPlayerUI.this.player.informTableLost();
 				}
 			}
 		} );
@@ -114,7 +119,10 @@ public class PlayingPlayerUI extends JFrame {
 				this.removeTableRows();
 				PlayingPlayerUI.this.update("Vez de " + PlayingPlayerUI.this.player.playerName);
 				PlayingPlayerUI.this.update(getGraphics());
-				PlayingPlayerUI.this.player.stand();
+				
+				// Arbitraty stand, made just to table don't play. Could be Player.TABLE_LOST ou Player.TABLE_WON
+				PlayingPlayerUI.this.player.stand(Player.TABLE_LOST);
+				
 				player.startNewRound();
 				newCardBtn.setEnabled(true);
 				standBtn.setEnabled(true);
